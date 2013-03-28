@@ -1,0 +1,29 @@
+{
+  "name": "redis-hash",
+  "version": "0.0.1",
+  "description": "Convenience wrapper for Redis hashes",
+  "keywords": [ "redis", "hash" ],
+  "author": "Jeff Lee <jeffomatic@gmail.com>",
+  "repository": {
+    "type" : "git",
+    "url" : "http://github.com/jeffomatic/redis-hash-js.git"
+  },
+  "bugs": {
+    "url" : "http://github.com/jeffomatic/redis-hash-js/issues"
+  },
+  "licenses": [
+    {
+      "type" : "MIT",
+      "url" : "http://github.com/jeffomatic/redis-hash-js/raw/master/LICENSE"
+    }
+  ],
+  "main": "./js/lib/redis_hash",
+  "dependencies": {
+  },
+  "devDependencies": {
+    "coffee-script": "~1.6.2",
+    "mocha": "~1.8.2",
+    "redis": "~0.8.2",
+    "should": "~1.2.2"
+  }
+}

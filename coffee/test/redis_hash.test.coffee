@@ -1,6 +1,7 @@
+assert = require('assert')
+
 testHelper = require('./test_helper')
 RedisHash = require('../lib/redis_hash')
-should = require('should')
 
 redisClient = testHelper.getRedisClient()
 
@@ -30,7 +31,7 @@ describe 'RedisHash', () ->
       it 'should persist a hash of values in Redis', (done) ->
         redisClient.hgetall @attribHash.key, (err, result) =>
           throw err if err?
-          result.should.eql @initialValues
+          assert.deepEqual result, @initialValues
           done()
 
       it 'should not clobber existing values', (done) ->
@@ -42,8 +43,8 @@ describe 'RedisHash', () ->
           throw err if err?
           redisClient.hgetall @attribHash.key, (err, result) =>
             throw err if err?
-            result[k].should == v for k, v of @initialValues
-            result[k].should == v for k, v of newValues
+            assert.equal result[k], v for k, v of @initialValues
+            assert.equal result[k], v for k, v of newValues
             done()
 
       it 'should encode boolean values', (done) ->
@@ -55,8 +56,8 @@ describe 'RedisHash', () ->
           throw err if err?
           redisClient.hgetall @attribHash.key, (err, result) =>
             throw err if err?
-            result.e.should.eql '1'
-            result.f.should.eql '0'
+            assert.equal result.e, '1'
+            assert.equal result.f, '0'
             done()
 
       it 'should remove non-existent values', (done) ->
@@ -73,7 +74,7 @@ describe 'RedisHash', () ->
         @attribHash.set values, (err, result) =>
           throw err if err?
           redisClient.hgetall @attribHash.key, (err, result) =>
-            result.should.eql existentEncoded
+            assert.deepEqual result, existentEncoded
             done()
 
     describe 'key/value pair syntax', () ->
@@ -86,7 +87,7 @@ describe 'RedisHash', () ->
       it "should persist values into Redis", (done) ->
         redisClient.hget @attribHash.key, 'foo', (err, result) =>
           throw err if err?
-          result.should.eql 'bar'
+          assert.equal result, 'bar'
           done()
 
       it 'should encode boolean true values', (done) ->
@@ -94,7 +95,7 @@ describe 'RedisHash', () ->
           throw err if err?
           redisClient.hget @attribHash.key, 'foo', (err, result) =>
             throw err if err?
-            result.should.eql '1'
+            assert.equal result, '1'
             done()
 
       it 'should encode boolean false values', (done) ->
@@ -102,7 +103,7 @@ describe 'RedisHash', () ->
           throw err if err?
           redisClient.hget @attribHash.key, 'foo', (err, result) =>
             throw err if err?
-            result.should.eql '0'
+            assert.equal result, '0'
             done()
 
       it 'should remove null values', (done) ->
@@ -110,7 +111,7 @@ describe 'RedisHash', () ->
           throw err if err?
           redisClient.hexists @attribHash.key, 'foo', (err, result) =>
             throw err if err?
-            result.should.eql 0
+            assert.equal result, 0
             done()
 
       it 'should remove undefined values', (done) ->
@@ -118,7 +119,7 @@ describe 'RedisHash', () ->
           throw err if err?
           redisClient.hexists @attribHash.key, 'foo', (err, result) =>
             throw err if err?
-            result.should.eql 0
+            assert.equal result, 0
             done()
 
   describe '#get', () ->
@@ -138,7 +139,7 @@ describe 'RedisHash', () ->
       it 'should return the entire hash of values', (done) ->
         @attribHash.get (err, result) =>
           throw err if err?
-          result.should.eql @attribs
+          assert.deepEqual result, @attribs
           done()
 
       it 'should return null if the hash is empty', (done) ->
@@ -146,7 +147,7 @@ describe 'RedisHash', () ->
           throw err if err?
           @attribHash.get (err, result) =>
             throw err if err?
-            should.not.exist result
+            assert !result?
             done()
 
     describe 'get-value syntax', () ->
@@ -159,13 +160,13 @@ describe 'RedisHash', () ->
       it 'should correctly return the name value', (done) ->
         @attribHash.get 'foo', (err, result) =>
           throw err if err?
-          result.should.eql 'bar'
+          assert.equal result, 'bar'
           done()
 
       it "should return null for values that don't exist", (done) ->
         @attribHash.get 'foobar', (err, result) ->
           throw err if err?
-          should.not.exist result
+          assert !result?
           done()
 
   describe '#delete', () ->
@@ -180,7 +181,7 @@ describe 'RedisHash', () ->
         throw err if err?
         redisClient.hexists @attribHash.key, 'foo', (err, result) ->
           throw err if err?
-          result.should.eql 0
+          assert.equal result, 0
           done()
 
   describe '#clear', () ->
@@ -195,7 +196,7 @@ describe 'RedisHash', () ->
         throw err if err?
         redisClient.exists @attribHash.key, (err, result) ->
           throw err if err?
-          result.should.eql 0
+          assert.equal result, 0
           done()
 
   describe 'flag attributes', () ->
@@ -212,7 +213,7 @@ describe 'RedisHash', () ->
         it "should persist '1' to Redis", (done) ->
           redisClient.hget @attribHash.key, 'foo', (err, result) ->
             throw err if err?
-            result.should.eql '1'
+            assert.equal result, '1'
             done()
 
       describe "false flags", () ->
@@ -225,7 +226,7 @@ describe 'RedisHash', () ->
         it "should persist '0' to redis", (done) ->
           redisClient.hget @attribHash.key, 'foo', (err, result) ->
             throw err if err?
-            result.should.eql '0'
+            assert.equal result, '0'
             done()
 
     describe '#getFlag', () ->
@@ -240,19 +241,48 @@ describe 'RedisHash', () ->
       it 'should return true for values set with #setFlag(true)', (done) ->
         @attribHash.getFlag 'foo', (err, result) ->
           throw err if err?
-          result.should.eql true
+          assert.equal result, true
           done()
 
       it 'should return false for values set with #setFlag(false)', (done) ->
         @attribHash.getFlag 'bar', (err, result) ->
           throw err if err?
-          result.should.eql false
+          assert.equal result, false
           done()
 
       it 'should return null for non-existent values', (done) ->
         @attribHash.getFlag 'foobar', (err, result) ->
           throw err if err?
-          should.not.exist result
+          assert !result?
+          done()
+
+    describe '#getFlags', () ->
+
+      beforeEach (done) ->
+        @attribHash.set a: '1', b: '0', c: 'not a boolean', (err) =>
+          throw err if err
+          done()
+
+      it 'should return values as an object', (done) ->
+        @attribHash.getFlags 'a', 'b', (err, results) =>
+          throw err if err
+          assert results.a
+          assert results.b? && !results.b
+          done()
+
+      it 'should accept an array argument', (done) ->
+        @attribHash.getFlags ['a', 'b'], (err, results) =>
+          throw err if err
+          assert results.a
+          assert results.b? && !results.b
+          done()
+
+      it 'should return null for non-boolean encoded values', (done) ->
+        @attribHash.getFlags 'a', 'b', 'c', (err, results) =>
+          throw err if err
+          assert results.a
+          assert results.b? && !results.b
+          assert !results.c?
           done()
 
   describe 'counter attributes', () ->
@@ -272,42 +302,42 @@ describe 'RedisHash', () ->
         it 'should return and persist the incremented value', (done) ->
           @attribHash.inc 'foo', (err, result) =>
             throw err if err?
-            result.should.eql (@attribs.foo + 1)
+            assert.equal result, (@attribs.foo + 1)
             @attribHash.get 'foo', (err, result) =>
               throw err if err?
-              result.should.eql (@attribs.foo + 1).toString()
+              assert.equal result, (@attribs.foo + 1).toString()
               done()
 
         it 'should treat non-existent values as zero', (done) ->
           @attribHash.inc 'foobar', (err, result) =>
             throw err if err?
-            result.should.eql 1
+            assert.equal result, 1
             @attribHash.get 'foobar', (err, result) =>
               throw err if err?
-              result.should.eql '1'
+              assert.equal result, '1'
               done()
 
         it 'should raise errors on non-numeric values', (done) ->
           @attribHash.inc 'bar', (err, result) =>
-            err.message.should.match /ERR hash value is not an integer/
+            assert err.message.match /ERR hash value is not an integer/
             done()
 
       it 'should accept arbitrary positive increments', (done) ->
         @attribHash.inc 'foo', 5, (err, result) =>
           throw err if err?
-          result.should.eql @attribs.foo + 5
+          assert.equal result, @attribs.foo + 5
           @attribHash.get 'foo', (err, result) =>
             throw err if err?
-            result.should.eql (@attribs.foo + 5).toString()
+            assert.equal result, (@attribs.foo + 5).toString()
             done()
 
       it 'should accept arbitrary negative increments', (done) ->
         @attribHash.inc 'foo', -5, (err, result) =>
           throw err if err?
-          result.should.eql @attribs.foo - 5
+          assert.equal result, @attribs.foo - 5
           @attribHash.get 'foo', (err, result) =>
             throw err if err?
-            result.should.eql (@attribs.foo - 5).toString()
+            assert.equal result, (@attribs.foo - 5).toString()
             done()
 
     describe '#dec', () ->
@@ -325,40 +355,40 @@ describe 'RedisHash', () ->
         it 'should return and persist the decremented value', (done) ->
           @attribHash.dec 'foo', (err, result) =>
             throw err if err?
-            result.should.eql (@attribs.foo - 1)
+            assert.equal result, (@attribs.foo - 1)
             @attribHash.get 'foo', (err, result) =>
               throw err if err?
-              result.should.eql (@attribs.foo - 1).toString()
+              assert.equal result, (@attribs.foo - 1).toString()
               done()
 
         it 'should treat non-existent values as zero', (done) ->
           @attribHash.dec 'foobar', (err, result) =>
             throw err if err?
-            result.should.eql -1
+            assert.equal result, -1
             @attribHash.get 'foobar', (err, result) =>
               throw err if err?
-              result.should.eql '-1'
+              assert.equal result, '-1'
               done()
 
         it 'should raise errors on non-numeric values', (done) ->
           @attribHash.dec 'bar', (err, result) =>
-            err.message.should.match /ERR hash value is not an integer/
+            assert err.message.match /ERR hash value is not an integer/
             done()
 
       it 'should accept arbitrary positive decrements', (done) ->
         @attribHash.dec 'foo', 5, (err, result) =>
           throw err if err?
-          result.should.eql @attribs.foo - 5
+          assert.equal result, @attribs.foo - 5
           @attribHash.get 'foo', (err, result) =>
             throw err if err?
-            result.should.eql (@attribs.foo - 5).toString()
+            assert.equal result, (@attribs.foo - 5).toString()
             done()
 
       it 'should accept arbitrary negative decrements', (done) ->
         @attribHash.dec 'foo', -5, (err, result) =>
           throw err if err?
-          result.should.eql @attribs.foo + 5
+          assert.equal result, @attribs.foo + 5
           @attribHash.get 'foo', (err, result) =>
             throw err if err?
-            result.should.eql (@attribs.foo + 5).toString()
+            assert.equal result, (@attribs.foo + 5).toString()
             done()

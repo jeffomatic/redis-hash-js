@@ -13,8 +13,8 @@ class RedisHash
   # @param {Function} a completion callback
   #
   # 2. A singe key-value pair
-  # @param {String} the subkey of the attribute
-  # @param {String} the value to set
+  # @param {String} the field to modify
+  # @param {String} the field's new value
   # @param {Function} a completion callback
   set: (args...) ->
     switch args.length
@@ -67,8 +67,8 @@ class RedisHash
   # 1. Callback only. Returns the entire attribute hash.
   # @param {Function} a completion callback
   #
-  # 2. A single key
-  # @param {String} the subkey of the attribute
+  # 2. A single field
+  # @param {String} the field to retrieve
   # @param {Function} a completion callback
   get: (args...) ->
     switch args.length
@@ -80,25 +80,34 @@ class RedisHash
         throw "Invalid number of arguments: #{args.length}"
 
   # Delete a single value from the hash
-  delete: (subkey, done) ->
-    @redis.hdel @key, subkey, done
+  delete: (field, done) ->
+    @redis.hdel @key, field, done
 
   # Clear the entire hash
   clear: (done) ->
     @redis.del @key, done
 
   # Set a boolean flag value in the hash
-  setFlag: (subkey, trueOrFalse, done) ->
-    @redis.hset @key, subkey, @_encode(trueOrFalse), done
+  setFlag: (field, trueOrFalse, done) ->
+    @redis.hset @key, field, @_encode(trueOrFalse), done
 
   # Retrieve a boolean flag value from the hash
-  getFlag: (subkey, done) ->
-    @get subkey, (err, result) =>
+  getFlag: (field, done) ->
+    @get field, (err, result) =>
       return done(err) if err
       done null, @_booleanDecode(result)
 
+  # Retrieve a list of flags from the hash
+  getFlags: (fields..., done) ->
+    fields = fields[0] if Array.isArray(fields[0])
+    @redis.hmget @key, fields..., (err, values) =>
+      return done(err) if err
+      result = {}
+      result[field] = @_booleanDecode(values[i]) for field, i in fields
+      done null, result
+
   # Increment a value in the hash
-  inc: (subkey, args...) ->
+  inc: (field, args...) ->
     switch args.length
       when 1
         delta = 1
@@ -109,10 +118,10 @@ class RedisHash
       else
         throw "Invalid argument count: #{args.length}"
 
-    @redis.hincrby @key, subkey, delta, done
+    @redis.hincrby @key, field, delta, done
 
   # Decrement a value in the hash
-  dec: (subkey, args...) ->
+  dec: (field, args...) ->
     switch args.length
       when 1
         delta = -1
@@ -123,7 +132,7 @@ class RedisHash
       else
         throw "Invalid argument count: #{args.length}"
 
-    @redis.hincrby @key, subkey, delta, done
+    @redis.hincrby @key, field, delta, done
 
   _encode: (trueOrFalse) ->
     if trueOrFalse == true

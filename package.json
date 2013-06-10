@@ -1,6 +1,6 @@
 {
   "name": "redis-hash",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Convenience wrapper for Redis hashes",
   "keywords": [ "redis", "hash" ],
   "author": "Jeff Lee <jeffomatic@gmail.com>",
@@ -23,7 +23,6 @@
   "devDependencies": {
     "coffee-script": "~1.6.2",
     "mocha": "~1.8.2",
-    "redis": "~0.8.2",
-    "should": "~1.2.2"
+    "redis": "~0.8.2"
   }
 }

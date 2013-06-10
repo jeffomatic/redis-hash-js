@@ -87,22 +87,22 @@
       }
     };
 
-    RedisHash.prototype["delete"] = function(subkey, done) {
-      return this.redis.hdel(this.key, subkey, done);
+    RedisHash.prototype["delete"] = function(field, done) {
+      return this.redis.hdel(this.key, field, done);
     };
 
     RedisHash.prototype.clear = function(done) {
       return this.redis.del(this.key, done);
     };
 
-    RedisHash.prototype.setFlag = function(subkey, trueOrFalse, done) {
-      return this.redis.hset(this.key, subkey, this._encode(trueOrFalse), done);
+    RedisHash.prototype.setFlag = function(field, trueOrFalse, done) {
+      return this.redis.hset(this.key, field, this._encode(trueOrFalse), done);
     };
 
-    RedisHash.prototype.getFlag = function(subkey, done) {
+    RedisHash.prototype.getFlag = function(field, done) {
       var _this = this;
 
-      return this.get(subkey, function(err, result) {
+      return this.get(field, function(err, result) {
         if (err) {
           return done(err);
         }
@@ -110,10 +110,33 @@
       });
     };
 
-    RedisHash.prototype.inc = function() {
-      var args, delta, done, subkey;
+    RedisHash.prototype.getFlags = function() {
+      var done, fields, _i, _ref,
+        _this = this;
 
-      subkey = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
+      fields = 2 <= arguments.length ? __slice.call(arguments, 0, _i = arguments.length - 1) : (_i = 0, []), done = arguments[_i++];
+      if (Array.isArray(fields[0])) {
+        fields = fields[0];
+      }
+      return (_ref = this.redis).hmget.apply(_ref, [this.key].concat(__slice.call(fields), [function(err, values) {
+        var field, i, result, _j, _len;
+
+        if (err) {
+          return done(err);
+        }
+        result = {};
+        for (i = _j = 0, _len = fields.length; _j < _len; i = ++_j) {
+          field = fields[i];
+          result[field] = _this._booleanDecode(values[i]);
+        }
+        return done(null, result);
+      }]));
+    };
+
+    RedisHash.prototype.inc = function() {
+      var args, delta, done, field;
+
+      field = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
       switch (args.length) {
         case 1:
           delta = 1;
@@ -126,13 +149,13 @@
         default:
           throw "Invalid argument count: " + args.length;
       }
-      return this.redis.hincrby(this.key, subkey, delta, done);
+      return this.redis.hincrby(this.key, field, delta, done);
     };
 
     RedisHash.prototype.dec = function() {
-      var args, delta, done, subkey;
+      var args, delta, done, field;
 
-      subkey = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
+      field = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
       switch (args.length) {
         case 1:
           delta = -1;
@@ -145,7 +168,7 @@
         default:
           throw "Invalid argument count: " + args.length;
       }
-      return this.redis.hincrby(this.key, subkey, delta, done);
+      return this.redis.hincrby(this.key, field, delta, done);
     };
 
     RedisHash.prototype._encode = function(trueOrFalse) {

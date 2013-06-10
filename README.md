@@ -39,19 +39,20 @@ hash.get(function(err, result) {
 
 #### constructor(redisClient, key)
 
-#### set(subkey, value, [callback])
-#### set(subkeysValues, [callback])
+#### set(field, value, [callback])
+#### set(fieldsValues, [callback])
 
-#### get([subkey], callback)
+#### get([field], callback)
 
-#### delete(subkey, [callback])
+#### delete(field, [callback])
 
 #### clear([callback])
 
-#### setFlag(subkey, trueOrFalse, [callback])
+#### setFlag(field, trueOrFalse, [callback])
 
-#### getFlag(subkey, callback)
+#### getFlag(field, callback)
+#### getFlags(fields, callback)
 
-#### inc(subkey, [delta], [callback])
+#### inc(field, [delta], [callback])
 
-#### dec(subkey, [delta], [callback])
+#### dec(field, [delta], [callback])

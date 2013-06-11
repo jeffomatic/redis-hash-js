@@ -1,4 +1,5 @@
 assert = require('assert')
+sinon = require('sinon')
 
 testHelper = require('./test_helper')
 RedisHash = require('../lib/redis_hash')
@@ -9,9 +10,27 @@ describe 'RedisHash', () ->
 
   beforeEach (done) ->
     @attribHash = new RedisHash(redisClient, 'testKey')
+    @attribHash.on 'error', (@errorSpy = sinon.spy())
     redisClient.flushdb (err, result) =>
       throw err if err?
       done()
+
+  describe '#_redisExect', () ->
+
+    it 'should pass arbitrary arguments', (done) ->
+      @attribHash._redisExec 'hmset', 'testKey', 'a', 'apple', 'b', 'blueberry', (err) =>
+        throw err if err
+        redisClient.hgetall 'testKey', (err, results) =>
+          throw err if err
+          assert.deepEqual results, a: 'apple', b: 'blueberry'
+          done()
+
+    it 'should emit errors', (done) ->
+      # Intentionally pass an insufficient number of arguments.
+      @attribHash._redisExec 'hdel', (err) =>
+        assert err
+        assert @errorSpy.calledWith(err)
+        done()
 
   describe '#set', () ->
 
@@ -317,8 +336,9 @@ describe 'RedisHash', () ->
               assert.equal result, '1'
               done()
 
-        it 'should raise errors on non-numeric values', (done) ->
+        it 'should return errors on non-numeric values', (done) ->
           @attribHash.inc 'bar', (err, result) =>
+            assert @errorSpy.calledWith(err)
             assert err.message.match /ERR hash value is not an integer/
             done()
 
@@ -370,8 +390,9 @@ describe 'RedisHash', () ->
               assert.equal result, '-1'
               done()
 
-        it 'should raise errors on non-numeric values', (done) ->
+        it 'should return errors on non-numeric values', (done) ->
           @attribHash.dec 'bar', (err, result) =>
+            assert @errorSpy.calledWith(err)
             assert err.message.match /ERR hash value is not an integer/
             done()
 

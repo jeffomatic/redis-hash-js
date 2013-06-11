@@ -37,7 +37,10 @@ hash.get(function(err, result) {
 
 ## Class reference
 
-#### constructor(redisClient, key)
+#### constructor(redisClient, key, opts)
+
+  - **opts**
+    - **emitErrs** (*true*) Redis errors will be emitted as `error` events
 
 #### set(field, value, [callback])
 #### set(fieldsValues, [callback])

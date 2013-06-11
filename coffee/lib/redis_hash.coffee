@@ -1,9 +1,39 @@
-class RedisHash
+events = require('events')
+{puts, inspect} = require('util')
+
+class RedisHash extends events.EventEmitter
 
   @isFalsy: (v) ->
     (v == false) || !(v?)
 
-  constructor: (@redis, @key) ->
+  @defaults:
+    emitErrs: true
+
+  constructor: (@redis, @key, @opts = {}) ->
+    for k, v of @constructor.defaults
+      @opts[k] = v unless @opts[k]?
+
+  _encode: (trueOrFalse) ->
+    if trueOrFalse == true
+      '1'
+    else if trueOrFalse == false
+      '0'
+    else if trueOrFalse?
+      trueOrFalse.toString()
+    else
+      trueOrFalse
+
+  _booleanDecode: (value) ->
+    switch value
+      when '1' then true
+      when '0' then false
+      else null
+
+  # Some annotated Redis commands
+  _redisExec: (command, args..., done) ->
+    @redis[command] args..., (err, results...) =>
+      @emit('error', err) if err && @opts.emitErrs
+      done err, results...
 
   # Two ways of calling this method:
   #
@@ -45,22 +75,22 @@ class RedisHash
           done err
         else
           hdelArgs.push done
-          @redis.hdel hdelArgs...
-      @redis.hmset hmsetArgs...
+          @_redisExec 'hdel', hdelArgs...
+      @_redisExec 'hmset', hmsetArgs...
     else if hmsetArgs.length > 1
       hmsetArgs.push done
-      @redis.hmset hmsetArgs...
+      @_redisExec 'hmset', hmsetArgs...
     else if hdelArgs.length > 1
       hdelArgs.push done
-      @redis.hdel hdelArgs...
+      @_redisExec 'hdel', hdelArgs...
     else
       process.nextTick done
 
   _pairSet: (k, v, done) ->
     if v?
-      @redis.hset @key, k, @_encode(v), done
+      @_redisExec 'hset', @key, k, @_encode(v), done
     else
-      @redis.hdel @key, k, done
+      @_redisExec 'hdel', @key, k, done
 
   # Two ways of calling this method:
   #
@@ -73,23 +103,23 @@ class RedisHash
   get: (args...) ->
     switch args.length
       when 1
-        @redis.hgetall @key, args[0]
+        @_redisExec 'hgetall', @key, args[0]
       when 2
-        @redis.hget @key, args[0], args[1]
+        @_redisExec 'hget', @key, args[0], args[1]
       else
         throw "Invalid number of arguments: #{args.length}"
 
   # Delete a single value from the hash
   delete: (field, done) ->
-    @redis.hdel @key, field, done
+    @_redisExec 'hdel', @key, field, done
 
   # Clear the entire hash
   clear: (done) ->
-    @redis.del @key, done
+    @_redisExec 'del', @key, done
 
   # Set a boolean flag value in the hash
   setFlag: (field, trueOrFalse, done) ->
-    @redis.hset @key, field, @_encode(trueOrFalse), done
+    @_redisExec 'hset', @key, field, @_encode(trueOrFalse), done
 
   # Retrieve a boolean flag value from the hash
   getFlag: (field, done) ->
@@ -100,7 +130,7 @@ class RedisHash
   # Retrieve a list of flags from the hash
   getFlags: (fields..., done) ->
     fields = fields[0] if Array.isArray(fields[0])
-    @redis.hmget @key, fields..., (err, values) =>
+    @_redisExec 'hmget', @key, fields..., (err, values) =>
       return done(err) if err
       result = {}
       result[field] = @_booleanDecode(values[i]) for field, i in fields
@@ -118,7 +148,7 @@ class RedisHash
       else
         throw "Invalid argument count: #{args.length}"
 
-    @redis.hincrby @key, field, delta, done
+    @_redisExec 'hincrby', @key, field, delta, done
 
   # Decrement a value in the hash
   dec: (field, args...) ->
@@ -132,22 +162,6 @@ class RedisHash
       else
         throw "Invalid argument count: #{args.length}"
 
-    @redis.hincrby @key, field, delta, done
-
-  _encode: (trueOrFalse) ->
-    if trueOrFalse == true
-      '1'
-    else if trueOrFalse == false
-      '0'
-    else if trueOrFalse?
-      trueOrFalse.toString()
-    else
-      trueOrFalse
-
-  _booleanDecode: (value) ->
-    switch value
-      when '1' then true
-      when '0' then false
-      else null
+    @_redisExec 'hincrby', @key, field, delta, done
 
 module.exports = RedisHash

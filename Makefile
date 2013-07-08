@@ -8,4 +8,4 @@ js:
 	@find coffee/lib -name '*.coffee' | xargs coffee -c -o js/lib
 	@find coffee/test -name '*.coffee' | xargs coffee -c -o js/test
 
-.PHONY: test js doc
+.PHONY: test test-js js

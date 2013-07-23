@@ -220,50 +220,22 @@ describe 'RedisHash', () ->
 
   describe 'flag attributes', () ->
 
-    describe '#setFlag', () ->
-
-      beforeEach (done) ->
-        @attribHash.setFlag 'foo', true, (err, result) ->
-          throw err if err?
-          done()
-
-      describe "true flags", () ->
-
-        it "should persist '1' to Redis", (done) ->
-          redisClient.hget @attribHash.key, 'foo', (err, result) ->
-            throw err if err?
-            assert.equal result, '1'
-            done()
-
-      describe "false flags", () ->
-
-        beforeEach (done) ->
-          @attribHash.setFlag 'foo', false, (err, result) ->
-            throw err if err?
-            done()
-
-        it "should persist '0' to redis", (done) ->
-          redisClient.hget @attribHash.key, 'foo', (err, result) ->
-            throw err if err?
-            assert.equal result, '0'
-            done()
-
     describe '#getFlag', () ->
 
       beforeEach (done) ->
-        @attribHash.setFlag 'foo', true, (err, result) =>
+        @attribHash.set 'foo', true, (err, result) =>
           throw err if err?
-          @attribHash.setFlag 'bar', false, (err, result) ->
+          @attribHash.set 'bar', false, (err, result) ->
             throw err if err?
             done()
 
-      it 'should return true for values set with #setFlag(true)', (done) ->
+      it 'should return true for values set with #set(true)', (done) ->
         @attribHash.getFlag 'foo', (err, result) ->
           throw err if err?
           assert.equal result, true
           done()
 
-      it 'should return false for values set with #setFlag(false)', (done) ->
+      it 'should return false for values set with #set(false)', (done) ->
         @attribHash.getFlag 'bar', (err, result) ->
           throw err if err?
           assert.equal result, false

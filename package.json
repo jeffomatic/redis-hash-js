@@ -1,6 +1,6 @@
 {
   "name": "redis-hash",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Convenience wrapper for Redis hashes",
   "keywords": [ "redis", "hash" ],
   "author": "Jeff Lee <jeffomatic@gmail.com>",

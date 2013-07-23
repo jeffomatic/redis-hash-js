@@ -154,10 +154,6 @@
       return this._redisExec('del', this.key, done);
     };
 
-    RedisHash.prototype.setFlag = function(field, trueOrFalse, done) {
-      return this._redisExec('hset', this.key, field, this._encode(trueOrFalse), done);
-    };
-
     RedisHash.prototype.getFlag = function(field, done) {
       var _this = this;
 

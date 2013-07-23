@@ -51,11 +51,8 @@ hash.get(function(err, result) {
 
 #### clear([callback])
 
-#### setFlag(field, trueOrFalse, [callback])
-
 #### getFlag(field, callback)
 #### getFlags(fields, callback)
 
 #### inc(field, [delta], [callback])
-
 #### dec(field, [delta], [callback])

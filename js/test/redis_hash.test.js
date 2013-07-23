@@ -386,55 +386,15 @@
       });
     });
     describe('flag attributes', function() {
-      describe('#setFlag', function() {
-        beforeEach(function(done) {
-          return this.attribHash.setFlag('foo', true, function(err, result) {
-            if (err != null) {
-              throw err;
-            }
-            return done();
-          });
-        });
-        describe("true flags", function() {
-          return it("should persist '1' to Redis", function(done) {
-            return redisClient.hget(this.attribHash.key, 'foo', function(err, result) {
-              if (err != null) {
-                throw err;
-              }
-              assert.equal(result, '1');
-              return done();
-            });
-          });
-        });
-        return describe("false flags", function() {
-          beforeEach(function(done) {
-            return this.attribHash.setFlag('foo', false, function(err, result) {
-              if (err != null) {
-                throw err;
-              }
-              return done();
-            });
-          });
-          return it("should persist '0' to redis", function(done) {
-            return redisClient.hget(this.attribHash.key, 'foo', function(err, result) {
-              if (err != null) {
-                throw err;
-              }
-              assert.equal(result, '0');
-              return done();
-            });
-          });
-        });
-      });
       describe('#getFlag', function() {
         beforeEach(function(done) {
           var _this = this;
 
-          return this.attribHash.setFlag('foo', true, function(err, result) {
+          return this.attribHash.set('foo', true, function(err, result) {
             if (err != null) {
               throw err;
             }
-            return _this.attribHash.setFlag('bar', false, function(err, result) {
+            return _this.attribHash.set('bar', false, function(err, result) {
               if (err != null) {
                 throw err;
               }
@@ -442,7 +402,7 @@
             });
           });
         });
-        it('should return true for values set with #setFlag(true)', function(done) {
+        it('should return true for values set with #set(true)', function(done) {
           return this.attribHash.getFlag('foo', function(err, result) {
             if (err != null) {
               throw err;
@@ -451,7 +411,7 @@
             return done();
           });
         });
-        it('should return false for values set with #setFlag(false)', function(done) {
+        it('should return false for values set with #set(false)', function(done) {
           return this.attribHash.getFlag('bar', function(err, result) {
             if (err != null) {
               throw err;

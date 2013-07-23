@@ -117,10 +117,6 @@ class RedisHash extends events.EventEmitter
   clear: (done) ->
     @_redisExec 'del', @key, done
 
-  # Set a boolean flag value in the hash
-  setFlag: (field, trueOrFalse, done) ->
-    @_redisExec 'hset', @key, field, @_encode(trueOrFalse), done
-
   # Retrieve a boolean flag value from the hash
   getFlag: (field, done) ->
     @get field, (err, result) =>
